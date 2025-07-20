@@ -19,7 +19,12 @@ async fn main() {
                 rocket_routes::rustaceans::get_rustacean,
                 rocket_routes::rustaceans::create_rustacean,
                 rocket_routes::rustaceans::update_rustacean,
-                rocket_routes::rustaceans::delete_rustacean
+                rocket_routes::rustaceans::delete_rustacean,
+                rocket_routes::crates::get_crates,
+                rocket_routes::crates::get_crate,
+                rocket_routes::crates::create_crate,
+                rocket_routes::crates::update_crate,
+                rocket_routes::crates::delete_crate
             ],
         )
         .attach(DbConn::init())
