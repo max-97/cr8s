@@ -5,9 +5,9 @@ use rocket::serde::json::Json;
 use rocket::serde::json::{Value, json};
 use rocket_db_pools::Connection;
 
-use crate::DbConn;
 use crate::models::{Crate, NewCrate};
 use crate::repositories::CrateRepository;
+use crate::rocket_routes::DbConn;
 
 #[rocket::get("/crates")]
 pub async fn get_crates(mut db: Connection<DbConn>) -> Result<Value, Custom<Value>> {
