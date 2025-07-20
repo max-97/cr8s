@@ -28,8 +28,12 @@ impl RustaceanRepository {
             .await
     }
 
-    pub async fn update(c: &mut AsyncPgConnection, rustacean: Rustacean) -> QueryResult<Rustacean> {
-        diesel::update(rustaceans::table.find(rustacean.id))
+    pub async fn update(
+        c: &mut AsyncPgConnection,
+        id: i32,
+        rustacean: Rustacean,
+    ) -> QueryResult<Rustacean> {
+        diesel::update(rustaceans::table.find(id))
             .set((
                 rustaceans::name.eq(rustacean.name),
                 rustaceans::email.eq(rustacean.email),
@@ -61,8 +65,8 @@ impl CrateRepository {
             .await
     }
 
-    pub async fn update(c: &mut AsyncPgConnection, crat: Crate) -> QueryResult<Crate> {
-        diesel::update(crates::table.find(crat.id))
+    pub async fn update(c: &mut AsyncPgConnection, id: i32, crat: Crate) -> QueryResult<Crate> {
+        diesel::update(crates::table.find(id))
             .set((
                 crates::rustacean_id.eq(crat.rustacean_id),
                 crates::code.eq(crat.code),
