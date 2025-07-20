@@ -11,7 +11,7 @@ impl RustaceanRepository {
         rustaceans::table.find(id).get_result(c).await
     }
 
-    pub async fn find_mutliple(
+    pub async fn find_multiple(
         c: &mut AsyncPgConnection,
         limit: i64,
     ) -> QueryResult<Vec<Rustacean>> {
