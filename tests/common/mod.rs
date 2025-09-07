@@ -1,7 +1,7 @@
 use reqwest::{StatusCode, blocking::Client};
 use serde_json::{Value, json};
 
-pub static APP_HOST: &'static str = "http://localhost:8000";
+pub static APP_HOST: &str = "http://localhost:8000";
 
 pub fn create_test_rustacean(client: &Client) -> Value {
     let response = client
