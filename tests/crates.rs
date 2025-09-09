@@ -98,17 +98,12 @@ fn test_view_crate() {
 fn test_view_crate_not_found() {
     let client = Client::new();
 
-    let rustacean = common::create_test_rustacean(&client);
-    let crate_ = common::create_test_crate(&client, &rustacean);
-
     let response = client
         .get(format!("{}/crates/{}", common::APP_HOST, -1))
         .send()
         .unwrap();
 
     assert_eq!(response.status(), StatusCode::NOT_FOUND);
-    common::delete_test_crate(&client, crate_);
-    common::delete_test_rustacean(&client, rustacean);
 }
 
 #[test]

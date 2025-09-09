@@ -85,7 +85,6 @@ fn test_view_rustaceans() {
 #[test]
 fn test_view_rustaceans_not_found() {
     let client = Client::new();
-    let rustacean = common::create_test_rustacean(&client);
 
     let response = client
         .get(format!("{}/rustaceans/{}", common::APP_HOST, -1))
@@ -93,7 +92,6 @@ fn test_view_rustaceans_not_found() {
         .unwrap();
 
     assert_eq!(response.status(), StatusCode::NOT_FOUND);
-    common::delete_test_rustacean(&client, rustacean);
 }
 
 #[test]
