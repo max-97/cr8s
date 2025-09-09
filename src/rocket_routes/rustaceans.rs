@@ -7,14 +7,14 @@ use rocket_db_pools::Connection;
 
 use crate::models::{NewRustacean, Rustacean};
 use crate::repositories::RustaceanRepository;
-use crate::rocket_routes::DbConn;
+use crate::rocket_routes::{DbConn, server_error};
 
 #[rocket::get("/rustaceans")]
 pub async fn get_rustaceans(mut db: Connection<DbConn>) -> Result<Value, Custom<Value>> {
     RustaceanRepository::find_multiple(&mut db, 100)
         .await
         .map(|rustaceans| json!(rustaceans))
-        .map_err(|_| Custom(Status::InternalServerError, json!("Error")))
+        .map_err(|e| server_error(e.into()))
 }
 
 #[rocket::get("/rustaceans/<id>")]
@@ -22,7 +22,7 @@ pub async fn get_rustacean(mut db: Connection<DbConn>, id: i32) -> Result<Value,
     RustaceanRepository::find(&mut db, id)
         .await
         .map(|rustaceans| json!(rustaceans))
-        .map_err(|_| Custom(Status::InternalServerError, json!("Error")))
+        .map_err(|e| server_error(e.into()))
 }
 
 #[rocket::post("/rustaceans", format = "json", data = "<new_rustacean>")]
@@ -33,7 +33,7 @@ pub async fn create_rustacean(
     RustaceanRepository::create(&mut db, new_rustacean.into_inner())
         .await
         .map(|rustaceans| Custom(Status::Created, json!(rustaceans)))
-        .map_err(|_| Custom(Status::InternalServerError, json!("Error")))
+        .map_err(|e| server_error(e.into()))
 }
 
 #[rocket::put("/rustaceans/<id>", format = "json", data = "<rustacean>")]
@@ -45,7 +45,7 @@ pub async fn update_rustacean(
     RustaceanRepository::update(&mut db, id, rustacean.into_inner())
         .await
         .map(|rustaceans| json!(rustaceans))
-        .map_err(|_| Custom(Status::InternalServerError, json!("Error")))
+        .map_err(|e| server_error(e.into()))
 }
 
 #[rocket::delete("/rustaceans/<id>")]
@@ -56,5 +56,5 @@ pub async fn delete_rustacean(
     RustaceanRepository::delete(&mut db, id)
         .await
         .map(|_| NoContent)
-        .map_err(|_| Custom(Status::InternalServerError, json!("Error")))
+        .map_err(|e| server_error(e.into()))
 }
