@@ -133,6 +133,70 @@ fn test_update_crate() {
 }
 
 #[test]
+fn test_update_to_valid_author_of_crate() {
+    let client = Client::new();
+
+    let rustacean = common::create_test_rustacean(&client);
+    let crate_ = common::create_test_crate(&client, &rustacean);
+
+    let rustacean2 = common::create_test_rustacean(&client);
+    let response = client
+        .put(format!("{}/crates/{}", common::APP_HOST, crate_["id"]))
+        .json(&json!({
+            "code": "fooz",
+            "name": "Fooz crate",
+            "version": "0.2",
+            "description": "Fooz crate description",
+            "rustacean_id": rustacean2["id"],
+        }))
+        .send()
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+    let crate_: Value = response.json().unwrap();
+    assert_eq!(
+        crate_,
+        json!({
+            "id": crate_["id"],
+            "rustacean_id": rustacean2["id"],
+            "code": "fooz",
+            "name": "Fooz crate",
+            "version": "0.2",
+            "description": "Fooz crate description",
+            "created_at": crate_["created_at"],
+        })
+    );
+
+    common::delete_test_crate(&client, crate_);
+    common::delete_test_rustacean(&client, rustacean);
+    common::delete_test_rustacean(&client, rustacean2);
+}
+
+#[test]
+fn test_update_to_invalid_author_of_crate() {
+    let client = Client::new();
+
+    let rustacean = common::create_test_rustacean(&client);
+    let crate_ = common::create_test_crate(&client, &rustacean);
+
+    let response = client
+        .put(format!("{}/crates/{}", common::APP_HOST, crate_["id"]))
+        .json(&json!({
+            "code": "fooz",
+            "name": "Fooz crate",
+            "version": "0.2",
+            "description": "Fooz crate description",
+            "rustacean_id": 99999,
+        }))
+        .send()
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::INTERNAL_SERVER_ERROR);
+    common::delete_test_crate(&client, crate_);
+    common::delete_test_rustacean(&client, rustacean);
+}
+
+#[test]
 fn test_delete_crate() {
     let client = Client::new();
 
