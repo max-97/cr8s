@@ -7,7 +7,7 @@ use rocket_db_pools::Connection;
 
 use crate::models::{NewRustacean, Rustacean};
 use crate::repositories::RustaceanRepository;
-use crate::rocket_routes::{DbConn, server_error};
+use crate::rocket_routes::{DbConn, server_error, server_error_404};
 
 #[rocket::get("/rustaceans")]
 pub async fn get_rustaceans(mut db: Connection<DbConn>) -> Result<Value, Custom<Value>> {
@@ -22,7 +22,10 @@ pub async fn get_rustacean(mut db: Connection<DbConn>, id: i32) -> Result<Value,
     RustaceanRepository::find(&mut db, id)
         .await
         .map(|rustaceans| json!(rustaceans))
-        .map_err(|e| server_error(e.into()))
+        .map_err(|e| match e {
+            diesel::result::Error::NotFound => server_error_404(e.into()),
+            _ => server_error(e.into()),
+        })
 }
 
 #[rocket::post("/rustaceans", format = "json", data = "<new_rustacean>")]

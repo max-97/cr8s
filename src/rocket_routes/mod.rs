@@ -14,3 +14,8 @@ pub fn server_error(e: Box<dyn Error>) -> Custom<serde_json::Value> {
     rocket::error!("{}", e);
     Custom(Status::InternalServerError, json!("Error"))
 }
+
+pub fn server_error_404(e: Box<dyn Error>) -> Custom<serde_json::Value> {
+    rocket::error!("{}", e);
+    Custom(Status::NotFound, json!("Error: Not Found"))
+}

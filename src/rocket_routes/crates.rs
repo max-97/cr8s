@@ -7,7 +7,7 @@ use rocket_db_pools::Connection;
 
 use crate::models::{Crate, NewCrate};
 use crate::repositories::CrateRepository;
-use crate::rocket_routes::{DbConn, server_error};
+use crate::rocket_routes::{DbConn, server_error, server_error_404};
 
 #[rocket::get("/crates")]
 pub async fn get_crates(mut db: Connection<DbConn>) -> Result<Value, Custom<Value>> {
@@ -22,7 +22,10 @@ pub async fn get_crate(mut db: Connection<DbConn>, id: i32) -> Result<Value, Cus
     CrateRepository::find(&mut db, id)
         .await
         .map(|crates| json!(crates))
-        .map_err(|e| server_error(e.into()))
+        .map_err(|e| match e {
+            diesel::result::Error::NotFound => server_error_404(e.into()),
+            _ => server_error(e.into()),
+        })
 }
 
 #[rocket::post("/crates", format = "json", data = "<new_crate>")]
