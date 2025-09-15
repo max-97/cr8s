@@ -2,7 +2,8 @@ use clap::{Arg, Command};
 
 extern crate cr8s;
 
-fn main() {
+#[tokio::main]
+async fn main() {
     let matches = Command::new("Cr8s")
         .about("Cr8s commands")
         .arg_required_else_help(true)
@@ -14,7 +15,7 @@ fn main() {
                     Command::new("create")
                         .about("Create new user")
                         .arg_required_else_help(true)
-                        .arg(Arg::new("name").required(true))
+                        .arg(Arg::new("username").required(true))
                         .arg(Arg::new("password").required(true))
                         .arg(
                             Arg::new("roles")
@@ -35,9 +36,29 @@ fn main() {
 
     match matches.subcommand() {
         Some(("users", sub_matches)) => match sub_matches.subcommand() {
-            Some(("create", create_params)) => {}
-            Some(("list", list_params)) => {}
-            Some(("delete", delete_params)) => {}
+            Some(("create", create_params)) => {
+                cr8s::commands::create_user(
+                    create_params
+                        .get_one::<String>("username")
+                        .unwrap()
+                        .to_owned(),
+                    create_params
+                        .get_one::<String>("password")
+                        .unwrap()
+                        .to_owned(),
+                    create_params
+                        .get_many::<String>("roles")
+                        .unwrap()
+                        .map(|v| v.to_owned())
+                        .collect(),
+                )
+                .await;
+            }
+            Some(("list", _list_params)) => cr8s::commands::list_users().await,
+            Some(("delete", delete_params)) => {
+                cr8s::commands::delete_user(delete_params.get_one::<i32>("id").unwrap().to_owned())
+                    .await
+            }
             Some((&_, _)) => {}
             None => {}
         },
