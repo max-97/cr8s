@@ -137,6 +137,13 @@ impl UserRepository {
 
         Ok(user)
     }
+
+    pub async fn delete(c: &mut AsyncPgConnection, id: i32) -> QueryResult<usize> {
+        diesel::delete(users_roles::table.filter(users_roles::user_id.eq(id)))
+            .execute(c)
+            .await?;
+        diesel::delete(users::table.find(id)).execute(c).await
+    }
 }
 
 pub struct RoleRepository {}
