@@ -1,8 +1,7 @@
 use rocket::http::Status;
 use rocket::response::status::Custom;
 use rocket::response::status::NoContent;
-use rocket::serde::json::Json;
-use rocket::serde::json::{Value, json};
+use rocket::serde::json::{Value, json, Json};
 use rocket_db_pools::Connection;
 
 use crate::models::{Crate, NewCrate};

@@ -3,6 +3,7 @@ use std::error::Error;
 use rocket::{http::Status, response::status::Custom};
 use serde_json::json;
 
+pub mod authorization;
 pub mod crates;
 pub mod rustaceans;
 
