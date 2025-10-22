@@ -5,7 +5,7 @@ use rocket_db_pools::Connection;
 
 use crate::models::{Crate, NewCrate, User};
 use crate::repositories::CrateRepository;
-use crate::rocket_routes::{DbConn, server_error, server_error_404};
+use crate::rocket_routes::{DbConn, EditorUser, server_error, server_error_404};
 
 #[rocket::get("/crates")]
 pub async fn get_crates(mut db: Connection<DbConn>, _user: User) -> Result<Value, Custom<Value>> {
@@ -34,7 +34,7 @@ pub async fn get_crate(
 pub async fn create_crate(
     mut db: Connection<DbConn>,
     new_crate: Json<NewCrate>,
-    _user: User,
+    _user: EditorUser,
 ) -> Result<Custom<Value>, Custom<Value>> {
     CrateRepository::create(&mut db, new_crate.into_inner())
         .await
@@ -47,7 +47,7 @@ pub async fn update_crate(
     mut db: Connection<DbConn>,
     id: i32,
     a_crate: Json<Crate>,
-    _user: User,
+    _user: EditorUser,
 ) -> Result<Value, Custom<Value>> {
     CrateRepository::update(&mut db, id, a_crate.into_inner())
         .await
@@ -59,7 +59,7 @@ pub async fn update_crate(
 pub async fn delete_crate(
     mut db: Connection<DbConn>,
     id: i32,
-    _user: User,
+    _user: EditorUser,
 ) -> Result<NoContent, Custom<Value>> {
     CrateRepository::delete(&mut db, id)
         .await
