@@ -1,6 +1,5 @@
-use chrono::SecondsFormat;
+use diesel::result::Error;
 use rocket::{
-    figment::value,
     http::Status,
     response::status::Custom,
     serde::json::{Json, Value, json},
@@ -21,7 +20,10 @@ pub async fn login(
 ) -> Result<Value, Custom<Value>> {
     let user = UserRepository::find_by_username(&mut db, &credentials.username)
         .await
-        .map_err(|e| server_error(e.into()))?;
+        .map_err(|e| match e {
+            Error::NotFound => Custom(Status::Unauthorized, json!("Wrong credentials")),
+            _ => server_error(e.into()),
+        })?;
 
     let session_id = authorize_user(&user, credentials.into_inner())
         .map_err(|_| Custom(Status::Unauthorized, json!("Wrong credentials")))?;
