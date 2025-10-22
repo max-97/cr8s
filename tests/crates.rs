@@ -27,6 +27,27 @@ fn test_get_crates() {
 }
 
 #[test]
+fn test_get_crates_unauthorized() {
+    let client = Client::new();
+    let authorized_client = common::get_client_with_logged_in_admin();
+
+    let rustacean1 = common::create_test_rustacean(&authorized_client);
+    let crate1 = common::create_test_crate(&authorized_client, &rustacean1);
+    let crate2 = common::create_test_crate(&authorized_client, &rustacean1);
+
+    let response = client
+        .get(format!("{}/crates", common::APP_HOST))
+        .send()
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
+
+    common::delete_test_crate(&authorized_client, crate1);
+    common::delete_test_crate(&authorized_client, crate2);
+    common::delete_test_rustacean(&authorized_client, rustacean1);
+}
+
+#[test]
 fn test_create_crates() {
     let client = common::get_client_with_logged_in_admin();
 
