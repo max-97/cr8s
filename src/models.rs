@@ -1,6 +1,15 @@
+use std::{fmt::Display, io::Write, str::FromStr};
+
 use crate::schema::*;
 use chrono::NaiveDateTime;
-use diesel::prelude::*;
+use diesel::{
+    deserialize::{FromSql, FromSqlRow},
+    expression::AsExpression,
+    pg::{Pg, PgValue},
+    prelude::*,
+    serialize::ToSql,
+    sql_types::Text,
+};
 use serde::{Deserialize, Serialize};
 
 #[derive(Queryable, AsChangeset, Serialize, Deserialize)]
@@ -61,7 +70,7 @@ pub struct NewUser {
 #[derive(Queryable, Identifiable, Debug)]
 pub struct Role {
     pub id: i32,
-    pub code: String,
+    pub code: RoleCode,
     pub name: String,
     pub created_at: NaiveDateTime,
 }
@@ -69,7 +78,7 @@ pub struct Role {
 #[derive(Insertable)]
 #[diesel(table_name = roles)]
 pub struct NewRole {
-    pub code: String,
+    pub code: RoleCode,
     pub name: String,
 }
 
@@ -88,4 +97,59 @@ pub struct UserRole {
 pub struct NewUserRole {
     pub user_id: i32,
     pub role_id: i32,
+}
+
+#[derive(AsExpression, Debug, FromSqlRow)]
+#[diesel(sql_type=Text)]
+pub enum RoleCode {
+    Admin,
+    Editor,
+    Viewer,
+}
+
+impl FromStr for RoleCode {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "admin" => Ok(RoleCode::Admin),
+            "editor" => Ok(RoleCode::Editor),
+            "viewer" => Ok(RoleCode::Viewer),
+            _ => Err(()),
+        }
+    }
+}
+
+impl Display for RoleCode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            RoleCode::Admin => write!(f, "admin"),
+            RoleCode::Editor => write!(f, "editor"),
+            RoleCode::Viewer => write!(f, "viewer"),
+        }
+    }
+}
+
+impl FromSql<Text, Pg> for RoleCode {
+    fn from_sql(values: PgValue<'_>) -> diesel::deserialize::Result<Self> {
+        match values.as_bytes() {
+            b"admin" => Ok(RoleCode::Admin),
+            b"editor" => Ok(RoleCode::Editor),
+            b"viewer" => Ok(RoleCode::Viewer),
+            _ => Ok(RoleCode::Viewer),
+        }
+    }
+}
+
+impl ToSql<Text, Pg> for RoleCode {
+    fn to_sql<'b>(
+        &'b self,
+        out: &mut diesel::serialize::Output<'b, '_, Pg>,
+    ) -> diesel::serialize::Result {
+        let _ = match self {
+            RoleCode::Admin => out.write_all(b"admin"),
+            RoleCode::Editor => out.write_all(b"editor"),
+            RoleCode::Viewer => out.write_all(b"viewer"),
+        };
+        Ok(diesel::serialize::IsNull::No)
+    }
 }

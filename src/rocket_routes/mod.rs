@@ -4,7 +4,7 @@ use rocket::{
     Request,
     http::Status,
     outcome::Outcome,
-    request::{self, FromRequest, Outcome},
+    request::{self, FromRequest},
     response::status::Custom,
 };
 use rocket_db_pools::Connection;
@@ -60,10 +60,10 @@ impl<'r> FromRequest<'r> for User {
                 .get::<String, i32>(format!("session/{}", header_value[1]))
                 .await;
 
-            if let Ok(user_id) = result {
-                if let Ok(user) = UserRepository::find(&mut db, user_id).await {
-                    return Outcome::Success(user);
-                }
+            if let Ok(user_id) = result
+                && let Ok(user) = UserRepository::find(&mut db, user_id).await
+            {
+                return Outcome::Success(user);
             }
         }
 
