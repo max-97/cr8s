@@ -27,9 +27,6 @@ fn test_get_rustaceans() {
 #[test]
 fn test_get_rustaceans_unauthorized() {
     let client = Client::new();
-    let authorized_client = common::get_client_with_logged_in_admin();
-    let rustacean1 = common::create_test_rustacean(&authorized_client);
-    let rustacean2 = common::create_test_rustacean(&authorized_client);
 
     let response = client
         .get(format!("{}/rustaceans", common::APP_HOST))
@@ -37,9 +34,6 @@ fn test_get_rustaceans_unauthorized() {
         .unwrap();
 
     assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
-
-    common::delete_test_rustacean(&authorized_client, rustacean1);
-    common::delete_test_rustacean(&authorized_client, rustacean2);
 }
 
 #[test]
