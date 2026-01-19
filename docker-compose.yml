@@ -20,6 +20,9 @@ services:
           redis={url=redis://redis:6379}
         }
       - CARGO_HOME=/app/.cargo
+      - SMTP_HOST=smtp.gmail.com
+      - SMTP_USERNAME=
+      - SMTP_PASSWORD=
     ports:
       - 8000:8000
     volumes:
