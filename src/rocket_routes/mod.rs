@@ -1,7 +1,8 @@
 use std::error::Error;
 
 use rocket::{
-    Request,
+    Request, Response,
+    fairing::{Fairing, Info, Kind},
     http::Status,
     outcome::Outcome,
     request::{self, FromRequest},
@@ -36,6 +37,30 @@ pub fn server_error(e: Box<dyn Error>) -> Custom<serde_json::Value> {
 pub fn server_error_404(e: Box<dyn Error>) -> Custom<serde_json::Value> {
     rocket::error!("{}", e);
     Custom(Status::NotFound, json!("Error: Not Found"))
+}
+
+#[rocket::options("/<_route_args..>")]
+pub fn options(_route_args: Option<std::path::PathBuf>) {
+    // Just to add CORS header via fairing
+}
+
+pub struct Cors;
+
+#[rocket::async_trait]
+impl Fairing for Cors {
+    fn info(&self) -> Info {
+        Info {
+            name: "Append CORS headers in respnses",
+            kind: Kind::Response,
+        }
+    }
+
+    async fn on_response<'r>(&self, _req: &'r Request<'_>, res: &mut Response<'r>) {
+        res.set_raw_header("Access-Control-Allow-Origin", "*");
+        res.set_raw_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+        res.set_raw_header("Access-Control-Allow-Headers", "*");
+        res.set_raw_header("Access-Control-Allow-Credentials", "true");
+    }
 }
 
 #[rocket::async_trait]

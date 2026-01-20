@@ -8,6 +8,7 @@ async fn main() {
         .mount(
             "/",
             rocket::routes![
+                cr8s::rocket_routes::options,
                 cr8s::rocket_routes::authorization::login,
                 cr8s::rocket_routes::rustaceans::get_rustaceans,
                 cr8s::rocket_routes::rustaceans::get_rustacean,
@@ -21,6 +22,7 @@ async fn main() {
                 cr8s::rocket_routes::crates::delete_crate
             ],
         )
+        .attach(cr8s::rocket_routes::Cors)
         .attach(cr8s::rocket_routes::CacheConn::init())
         .attach(cr8s::rocket_routes::DbConn::init())
         .launch()
