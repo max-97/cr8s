@@ -7,9 +7,7 @@ use rocket::{
 use rocket_db_pools::{Connection, deadpool_redis::redis::AsyncCommands};
 
 use crate::{
-    auth::{Credentials, authorize_user},
-    repositories::UserRepository,
-    rocket_routes::{CacheConn, DbConn, server_error},
+    auth::{authorize_user, Credentials}, models::User, repositories::UserRepository, rocket_routes::{server_error, CacheConn, DbConn}
 };
 
 #[rocket::post("/login", format = "json", data = "<credentials>")]
@@ -34,4 +32,9 @@ pub async fn login(
         .map_err(|e| server_error(e.into()))?;
 
     Ok(json!({"token": session_id}))
+}
+
+#[rocket::get("/profile")]
+pub fn profile(user: User) -> Value {
+    json!(user)
 }
