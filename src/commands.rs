@@ -2,13 +2,10 @@ use std::str::FromStr;
 
 use chrono::{Datelike, Utc};
 use diesel_async::{AsyncConnection, AsyncPgConnection};
-use lettre::message::MessageBuilder;
-use lettre::message::header::ContentType;
-use lettre::transport::smtp::authentication::Credentials;
-use lettre::{SmtpTransport, Transport};
 use tera::{Context, Tera};
 
 use crate::auth;
+use crate::mail::HtmlMailer;
 use crate::models::{NewUser, RoleCode};
 use crate::repositories::{CrateRepository, RoleRepository, UserRepository};
 
@@ -67,20 +64,12 @@ pub async fn digest_send(email: String, hours_since: i32) {
         .await
         .unwrap();
     if !crates.is_empty() {
+        println!("Sending digest for {} crates", crates.len());
         let year = Utc::now().year();
 
         let mut context = Context::new();
         context.insert("crates", &crates);
         context.insert("year", &year);
-        let html_body = tera.render("email/digest.html", &context).unwrap();
-
-        let message = MessageBuilder::new()
-            .subject("Cr8s digest")
-            .from("Cr8s <noreply@cr8s.com>".parse().unwrap())
-            .to(email.parse().unwrap())
-            .header(ContentType::TEXT_HTML)
-            .body(html_body)
-            .unwrap();
 
         let smtp_host = std::env::var("SMTP_HOST").expect("Cannot load SMTP host from environment");
         let smtp_username =
@@ -88,12 +77,12 @@ pub async fn digest_send(email: String, hours_since: i32) {
         let smtp_password =
             std::env::var("SMTP_PASSWORD").expect("Cannot load SMTP password from environment");
 
-        let credentials = Credentials::new(smtp_username, smtp_password);
-        let mailer = SmtpTransport::relay(&smtp_host)
-            .unwrap()
-            .credentials(credentials)
-            .build();
-
-        mailer.send(&message).unwrap();
+        let mailer = HtmlMailer {
+            tempalte_engine: tera,
+            smtp_host,
+            smtp_username,
+            smtp_password,
+        };
+        mailer.send(email, "email/digest.html", &context).unwrap();
     }
 }
